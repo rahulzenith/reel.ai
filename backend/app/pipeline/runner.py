@@ -20,6 +20,7 @@ async def run_pipeline(
     trigger: str = "manual",
     user_topic: str | None = None,
     user_content: str | None = None,
+    language: str = "en",
 ) -> str | None:
     if _run_lock.locked():
         log.warning("Run requested (%s) but a pipeline is already running", trigger)
@@ -34,7 +35,7 @@ async def run_pipeline(
         await events.emit(events.run_started(run_id, trigger))
 
         initial_state = {"run_id": run_id, "trigger": trigger, "retry_count": 0,
-                         "logs": [], "errors": []}
+                         "language": language, "logs": [], "errors": []}
         if user_topic:
             initial_state["user_topic"] = user_topic
         if user_content:

@@ -9,6 +9,7 @@ from ...memory.procedural import format_style, get_style_profile
 from ...memory.semantic import recall_learnings
 from ...prompts.script_writer import (
     HUMAN_TEMPLATE,
+    LANGUAGE_BLOCKS,
     RETRY_ADDENDUM,
     SYSTEM_TEMPLATE,
     USER_CONTEXT_BLOCK,
@@ -35,6 +36,7 @@ async def script_writer(state: dict) -> dict:
 
     word_min, word_max = word_range()
     system = SYSTEM_TEMPLATE.format(
+        language_block=LANGUAGE_BLOCKS.get(state.get("language", "en"), ""),
         niche=settings.niche,
         style=format_style(style),
         patterns=format_patterns(patterns),

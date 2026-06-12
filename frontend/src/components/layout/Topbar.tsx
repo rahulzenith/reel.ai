@@ -8,9 +8,11 @@ interface Props {
   topic: string;
   content: string;
   showContent: boolean;
+  language: string;
   onTopicChange: (v: string) => void;
   onContentChange: (v: string) => void;
   onToggleContent: () => void;
+  onLanguageChange: (v: string) => void;
   onRun: () => void;
 }
 
@@ -23,8 +25,8 @@ const STATUS_LABELS: Record<string, string> = {
 
 export default function Topbar({
   connected, runStatus, publishMode, nextScheduledRun,
-  topic, content, showContent,
-  onTopicChange, onContentChange, onToggleContent, onRun,
+  topic, content, showContent, language,
+  onTopicChange, onContentChange, onToggleContent, onLanguageChange, onRun,
 }: Props) {
   const running = runStatus === "running";
   return (
@@ -75,6 +77,18 @@ export default function Topbar({
             >
               + content{content ? " ✓" : ""}
             </button>
+            <select
+              value={language}
+              onChange={(e) => onLanguageChange(e.target.value)}
+              disabled={running}
+              title="Script + voiceover language (manual mode)"
+              className="px-2 py-2 text-xs rounded-xl bg-slate-900/80 border border-slate-700/60
+                         text-slate-300 outline-none focus:border-emerald-500/50
+                         disabled:opacity-40 transition-colors cursor-pointer"
+            >
+              <option value="en">EN</option>
+              <option value="hi">हिंदी</option>
+            </select>
           </div>
 
           <div className="flex items-center gap-4 shrink-0">

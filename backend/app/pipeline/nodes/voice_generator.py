@@ -8,6 +8,7 @@ from moviepy import AudioFileClip
 from ...core.config import settings
 from ...core.paths import run_dir
 from ...tools.tts.service import synthesize
+from ...tools.tts.spoken import build_spoken_text
 from ...tools.tts.tempo import compress_to_fit
 from ...ws import events
 from .base import pipeline_node
@@ -23,7 +24,10 @@ def _measure(path: str) -> float:
 @pipeline_node("voice_generator")
 async def voice_generator(state: dict) -> dict:
     out_path = run_dir(state["run_id"]) / "voiceover.mp3"
-    path, source = await synthesize(state["script"]["full_text"], out_path)
+    # spoken text carries <break> pauses between hook/body/CTA; captions use clean full_text
+    path, source = await synthesize(
+        build_spoken_text(state["script"]), out_path, state.get("language", "en")
+    )
     duration = await asyncio.to_thread(_measure, str(path))
 
     # Hard ceiling: tempo-compress if the voice spoke too slowly to fit

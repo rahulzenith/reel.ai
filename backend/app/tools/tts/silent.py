@@ -12,7 +12,9 @@ SAMPLE_RATE = 44100
 
 
 def silent_synthesize(text: str, out_path: Path) -> Path:
-    duration = max(len(text.split()) / WORDS_PER_SECOND, 5.0)
+    from .spoken import strip_break_tags
+
+    duration = max(len(strip_break_tags(text).split()) / WORDS_PER_SECOND, 5.0)
     samples = np.zeros((int(duration * SAMPLE_RATE), 2), dtype=np.float32)
     clip = AudioArrayClip(samples, fps=SAMPLE_RATE)
     clip.write_audiofile(str(out_path), logger=None)

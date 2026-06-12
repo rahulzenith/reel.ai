@@ -1,11 +1,13 @@
-"""B-roll compositing: crop/resize clips to 9:16 and concatenate to cover the
-audio duration. MoviePy 2.x API.
+"""B-roll compositing: cut clips into ~5s scene segments (guaranteeing a visual
+change every few seconds), crossfade between them, cover the audio duration.
+MoviePy 2.x API.
 """
 from pathlib import Path
 
-from moviepy import ColorClip, VideoClip, VideoFileClip, concatenate_videoclips
+from moviepy import ColorClip, VideoClip, VideoFileClip, concatenate_videoclips, vfx
 
 TARGET_W, TARGET_H = 1080, 1920
+CROSSFADE = 0.25
 
 
 def _fit_to_vertical(clip: VideoFileClip) -> VideoClip:
@@ -17,31 +19,35 @@ def _fit_to_vertical(clip: VideoFileClip) -> VideoClip:
     )
 
 
-def build_background(broll_paths: list[Path], duration: float) -> VideoClip:
-    segments: list[VideoClip] = []
-    covered = 0.0
-
-    # Loop over the clips repeatedly until the audio duration is covered
-    i = 0
-    while covered < duration and broll_paths:
-        path = broll_paths[i % len(broll_paths)]
-        i += 1
-        if i > len(broll_paths) * 10:  # safety valve against zero-length clips
-            break
+def build_background(broll_paths: list[Path], duration: float, scene_seconds: float = 5.0) -> VideoClip:
+    """One ~scene_seconds segment per clip, in plan order, looping through the
+    clips if there are fewer than needed — a fresh visual every <=scene_seconds."""
+    sources: list[VideoClip] = []
+    for path in broll_paths:
         try:
-            clip = VideoFileClip(str(path)).without_audio()
-            clip = _fit_to_vertical(clip)
-            take = min(clip.duration, duration - covered)
-            if take <= 0.1:
-                clip.close()
-                continue
-            segments.append(clip.subclipped(0, take))
-            covered += take
+            sources.append(VideoFileClip(str(path)).without_audio())
         except Exception:
             continue
 
-    if not segments:
+    if not sources:
         return ColorClip(size=(TARGET_W, TARGET_H), color=(12, 12, 24), duration=duration)
 
-    background = concatenate_videoclips(segments, method="compose")
+    segments: list[VideoClip] = []
+    covered = 0.0
+    i = 0
+    while covered < duration:
+        clip = sources[i % len(sources)]
+        take = min(scene_seconds, max(clip.duration, 0.5), duration - covered)
+        if take <= 0.1:
+            break
+        segment = _fit_to_vertical(clip.subclipped(0, min(take, clip.duration)))
+        if segments:  # crossfade into every segment after the first
+            segment = segment.with_effects([vfx.CrossFadeIn(CROSSFADE)])
+        segments.append(segment)
+        covered += take - (CROSSFADE if len(segments) > 1 else 0)
+        i += 1
+        if i > 200:  # safety valve
+            break
+
+    background = concatenate_videoclips(segments, method="compose", padding=-CROSSFADE)
     return background.with_duration(min(background.duration, duration))

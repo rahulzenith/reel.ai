@@ -9,12 +9,12 @@ from .silent import silent_synthesize
 log = get_logger(__name__)
 
 
-async def synthesize(text: str, out_path: Path) -> tuple[Path, str]:
+async def synthesize(text: str, out_path: Path, language: str = "en") -> tuple[Path, str]:
     if settings.has_cartesia:
         try:
             from .cartesia import cartesia_synthesize
 
-            await cartesia_synthesize(text, out_path)
+            await cartesia_synthesize(text, out_path, language)
             return out_path, "cartesia"
         except Exception as e:
             log.warning("Cartesia failed (%s) — trying ElevenLabs", e)

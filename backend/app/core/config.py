@@ -30,6 +30,8 @@ class Settings(BaseSettings):
     cartesia_api_key: str = ""
     cartesia_model_id: str = "sonic-2"
     cartesia_voice_id: str = ""
+    # optional Hindi voice override — sonic-3 speaks Hindi with the main voice
+    cartesia_voice_id_hi: str = ""
 
     # ElevenLabs (secondary TTS)
     elevenlabs_api_key: str = ""
@@ -57,8 +59,10 @@ class Settings(BaseSettings):
     max_script_retries: int = 2
     target_duration_seconds: int = 50
     max_video_seconds: int = 59  # hard ceiling — audio is tempo-adjusted to fit
+    broll_scene_seconds: int = 5  # visual changes every ~N seconds
     niche: str = "ai and technology"
     caption_font_path: str = "assets/fonts/Anton-Regular.ttf"
+    caption_font_hindi_path: str = "assets/fonts/Mukta-Bold.ttf"  # Devanagari-capable
     topic_dedup_distance: float = 0.25
     topic_dedup_days: int = 30
 
@@ -89,6 +93,11 @@ class Settings(BaseSettings):
     @property
     def caption_font(self) -> Path:
         p = Path(self.caption_font_path)
+        return p if p.is_absolute() else BACKEND_DIR / p
+
+    @property
+    def caption_font_hindi(self) -> Path:
+        p = Path(self.caption_font_hindi_path)
         return p if p.is_absolute() else BACKEND_DIR / p
 
     @property

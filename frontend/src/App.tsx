@@ -17,9 +17,10 @@ export default function App() {
   const [topic, setTopic] = useState("");
   const [content, setContent] = useState("");
   const [showContent, setShowContent] = useState(false);
+  const [language, setLanguage] = useState("en");
 
   const handleRun = () => {
-    triggerRun(topic, content)
+    triggerRun(topic, content, language)
       .then(() => {
         setTopic("");
         setContent("");
@@ -38,9 +39,11 @@ export default function App() {
         topic={topic}
         content={content}
         showContent={showContent}
+        language={language}
         onTopicChange={setTopic}
         onContentChange={setContent}
         onToggleContent={() => setShowContent((v) => !v)}
+        onLanguageChange={setLanguage}
         onRun={handleRun}
       />
 

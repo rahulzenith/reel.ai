@@ -14,6 +14,7 @@ MAX_CONTENT_CHARS = 4000
 class RunRequest(BaseModel):
     topic: str | None = None
     content: str | None = None  # pasted source material
+    language: str = "en"        # en | hi
 
 
 @router.post("/run")
@@ -23,11 +24,15 @@ async def trigger_run(req: RunRequest | None = None):
 
     topic = (req.topic or "").strip() if req else ""
     content = (req.content or "").strip()[:MAX_CONTENT_CHARS] if req else ""
+    language = (req.language if req else "en") or "en"
+    if language not in ("en", "hi"):
+        raise HTTPException(status_code=422, detail="language must be 'en' or 'hi'")
 
     asyncio.create_task(run_pipeline(
         trigger="manual",
         user_topic=topic or None,
         user_content=content or None,
+        language=language,
     ))
     return {"status": "started", "mode": "manual-topic" if (topic or content) else "auto"}
 

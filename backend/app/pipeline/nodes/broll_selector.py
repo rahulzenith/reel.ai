@@ -1,9 +1,11 @@
-"""Node 5 (parallel with voice_generator): LLM plans 4-5 B-roll scenes in
-narrative order, then one clip is fetched per scene. The assembler concatenates
-clips in this order, so visuals roughly track the narration.
+"""Node 5 (parallel with voice_generator): an LLM creative director plans one
+scene per ~5s of speech, then one clip is fetched per scene. The assembler cuts
+them into 5s segments in this order, so visuals track the narration.
 
 Falls back to the script's own keywords if the planning call fails.
 """
+import math
+
 from pydantic import BaseModel, Field
 
 from ...core.config import settings
@@ -14,29 +16,33 @@ from ...tools.broll.service import fetch_broll
 from ...ws import events
 from .base import pipeline_node
 
-MAX_SCENES = 5
-
 
 class BrollPlan(BaseModel):
     queries: list[str] = Field(
-        description="4-5 stock footage search queries, one per scene, in narrative order"
+        description="Stock footage search queries, one per scene, in narrative order"
     )
+
+
+def scene_count() -> int:
+    return math.ceil(settings.target_duration_seconds / settings.broll_scene_seconds)
 
 
 @pipeline_node("broll_selector")
 async def broll_selector(state: dict) -> dict:
     script = state["script"]
+    n_scenes = scene_count()
 
     try:
-        planner = get_chat_model(temperature=0.4, max_tokens=300).with_structured_output(BrollPlan)
+        planner = get_chat_model(temperature=0.6, max_tokens=600).with_structured_output(BrollPlan)
         plan: BrollPlan = await planner.ainvoke([
-            ("system", SYSTEM),
+            ("system", SYSTEM.format(n_scenes=n_scenes)),
             ("human", HUMAN_TEMPLATE.format(
                 duration=settings.target_duration_seconds,
                 full_text=script["full_text"],
+                n_scenes=n_scenes,
             )),
         ])
-        queries = [q.strip() for q in plan.queries if q.strip()][:MAX_SCENES]
+        queries = [q.strip() for q in plan.queries if q.strip()][:n_scenes]
         plan_source = "llm-scenes"
     except Exception:
         queries = []
@@ -46,7 +52,8 @@ async def broll_selector(state: dict) -> dict:
         queries = script.get("keywords") or state["topic"].split()[:3]
 
     await events.emit(events.node_status(
-        "broll_selector", "running", f"Scene plan ({plan_source}): {' | '.join(queries)}"
+        "broll_selector", "running",
+        f"Scene plan ({plan_source}, {len(queries)} scenes): {' | '.join(queries)}",
     ))
 
     clips, source = await fetch_broll(queries, len(queries), broll_dir(state["run_id"]))
@@ -57,5 +64,5 @@ async def broll_selector(state: dict) -> dict:
     return {
         "broll_paths": [str(p) for p in clips],
         "broll_source": source,
-        "logs": [f"broll_selector: {len(clips)} {source} clips for scenes: {', '.join(queries)}"],
+        "logs": [f"broll_selector: {len(clips)} {source} clips for {len(queries)} scenes"],
     }

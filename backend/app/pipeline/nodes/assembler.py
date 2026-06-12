@@ -19,13 +19,17 @@ async def assembler(state: dict) -> dict:
     await events.emit(events.node_status(
         "assembler", "running", "Rendering video (this takes a minute)..."
     ))
+    # Anton has no Devanagari glyphs — Hindi captions need the Mukta font
+    font = settings.caption_font_hindi if state.get("language") == "hi" else settings.caption_font
+
     result = await asyncio.to_thread(
         assemble,
         [Path(p) for p in state["broll_paths"]],
         Path(state["voiceover_path"]),
         state["script"]["full_text"],
         out_path,
-        settings.caption_font,
+        font,
+        settings.broll_scene_seconds,
     )
 
     await update_run(state["run_id"], video_path=str(out_path))

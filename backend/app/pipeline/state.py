@@ -9,6 +9,7 @@ class PipelineState(TypedDict, total=False):
     # manual mode (user-supplied brief) — absent on auto runs
     user_topic: str
     user_content: str
+    language: str  # en | hi — script + voice language
 
     # trend_scout
     topic: str

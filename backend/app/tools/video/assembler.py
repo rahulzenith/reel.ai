@@ -17,11 +17,12 @@ def assemble(
     script_text: str,
     out_path: Path,
     font_path: Path,
+    scene_seconds: float = 5.0,
 ) -> dict:
     audio = AudioFileClip(str(audio_path))
     duration = audio.duration
 
-    background = build_background(broll_paths, duration)
+    background = build_background(broll_paths, duration, scene_seconds)
     captions = build_caption_clips(script_text, duration, font_path)
 
     final = (

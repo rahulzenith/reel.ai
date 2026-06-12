@@ -9,12 +9,18 @@ API_URL = "https://api.cartesia.ai/tts/bytes"
 CARTESIA_VERSION = "2024-11-13"
 
 
-async def cartesia_synthesize(text: str, out_path: Path) -> Path:
+async def cartesia_synthesize(text: str, out_path: Path, language: str = "en") -> Path:
+    # sonic-3 is multilingual — the main voice speaks Hindi too; a dedicated
+    # Hindi voice is an optional override
+    voice_id = settings.cartesia_voice_id
+    if language == "hi" and settings.cartesia_voice_id_hi:
+        voice_id = settings.cartesia_voice_id_hi
+
     payload = {
         "model_id": settings.cartesia_model_id,
         "transcript": text,
-        "voice": {"mode": "id", "id": settings.cartesia_voice_id},
-        "language": "en",
+        "voice": {"mode": "id", "id": voice_id},
+        "language": language,
         "output_format": {"container": "mp3", "bit_rate": 128000, "sample_rate": 44100},
     }
     headers = {
