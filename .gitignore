@@ -1,0 +1,28 @@
+# Secrets
+.env
+client_secret*.json
+token.json
+
+# Generated media
+outputs/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.pytest_cache/
+
+# Node
+node_modules/
+frontend/dist/
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
+
+# Media files anywhere
+*.mp4
+*.mp3
+!backend/assets/**
