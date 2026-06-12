@@ -8,6 +8,22 @@ QUERIES = [
 ]
 
 
+async def get_topic_context(topic: str, max_chars: int = 1500) -> str:
+    """Fresh facts about the chosen topic, for grounding the script writer.
+    LLM training data is months stale; this is what keeps scripts factual."""
+    from tavily import AsyncTavilyClient
+
+    client = AsyncTavilyClient(api_key=settings.tavily_api_key)
+    results = await client.search(query=topic, max_results=3, search_depth="advanced")
+
+    chunks = []
+    for r in results.get("results", []):
+        content = r.get("content", "").strip()
+        if content:
+            chunks.append(f"[{r.get('title', 'source')}] {content}")
+    return "\n".join(chunks)[:max_chars]
+
+
 async def get_tavily_candidates(n: int = 8) -> list[TrendCandidate]:
     # Guarded import: tavily-python may be absent; service falls through on any error
     from tavily import AsyncTavilyClient

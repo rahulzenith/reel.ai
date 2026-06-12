@@ -12,8 +12,15 @@ export async function fetchHistory(limit = 20): Promise<RunHistoryItem[]> {
   return res.json();
 }
 
-export async function triggerRun(): Promise<{ status: string }> {
-  const res = await fetch("/api/run", { method: "POST" });
+export async function triggerRun(topic?: string, content?: string): Promise<{ status: string }> {
+  const hasBrief = Boolean(topic?.trim() || content?.trim());
+  const res = await fetch("/api/run", {
+    method: "POST",
+    ...(hasBrief && {
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ topic: topic?.trim() || null, content: content?.trim() || null }),
+    }),
+  });
   if (res.status === 409) throw new Error("A run is already in progress");
   if (!res.ok) throw new Error(`run ${res.status}`);
   return res.json();

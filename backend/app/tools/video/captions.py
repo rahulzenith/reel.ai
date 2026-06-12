@@ -34,6 +34,9 @@ def build_caption_clips(text: str, duration: float, font_path: Path) -> list[Tex
                 stroke_width=4,
                 method="caption",
                 size=(WIDTH - 160, None),
+                # without margin, MoviePy's tight text box clips glyph
+                # bottoms and the stroke outline
+                margin=(8, 24),
                 text_align="center",
             )
             .with_start(cursor)

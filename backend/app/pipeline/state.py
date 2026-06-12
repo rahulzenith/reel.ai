@@ -6,9 +6,14 @@ class PipelineState(TypedDict, total=False):
     run_id: str
     trigger: str
 
+    # manual mode (user-supplied brief) — absent on auto runs
+    user_topic: str
+    user_content: str
+
     # trend_scout
     topic: str
     topic_source: str
+    topic_context: str     # fresh web facts grounding the script (LLM cutoff fix)
 
     # script_writer / evaluator
     script: dict           # Script.model_dump()

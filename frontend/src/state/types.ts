@@ -6,12 +6,21 @@ export interface Scores {
   clarity_score: number;
 }
 
+export interface ScriptData {
+  hook: string;
+  body: string;
+  cta: string;
+  full_text: string;
+  title: string;
+  keywords: string[];
+}
+
 // Discriminated union of everything the backend broadcasts
 export type WsEvent =
   | { type: "run_started"; run_id: string; trigger: string; log?: string }
   | { type: "node_status"; node: string; status: AgentStatus; log?: string }
   | { type: "topic_selected"; topic: string; source: string; log?: string }
-  | { type: "script_preview"; script: Record<string, unknown>; log?: string }
+  | { type: "script_preview"; script: ScriptData; log?: string }
   | { type: "eval_scores"; scores: Scores; passed: boolean; retry_count: number; feedback: string; log?: string }
   | { type: "run_complete"; run_id: string; video_path: string | null; youtube_url: string | null; dry_run: boolean; log?: string }
   | { type: "run_error"; run_id: string; error: string; log?: string };
@@ -23,7 +32,9 @@ export interface RunSnapshot {
   topic: string | null;
   topic_source: string | null;
   nodes: Record<string, AgentStatus>;
+  script: ScriptData | null;
   scores: Scores | null;
+  eval_feedback: string | null;
   retry_count: number;
   video_path: string | null;
   youtube_url: string | null;

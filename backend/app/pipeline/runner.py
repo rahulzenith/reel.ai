@@ -16,20 +16,33 @@ def is_running() -> bool:
     return _run_lock.locked()
 
 
-async def run_pipeline(trigger: str = "manual") -> str | None:
+async def run_pipeline(
+    trigger: str = "manual",
+    user_topic: str | None = None,
+    user_content: str | None = None,
+) -> str | None:
     if _run_lock.locked():
         log.warning("Run requested (%s) but a pipeline is already running", trigger)
         return None
+
+    if user_topic or user_content:
+        trigger = "manual-topic"
 
     async with _run_lock:
         run_id = await create_run(trigger)
         registry.start_run(run_id)
         await events.emit(events.run_started(run_id, trigger))
 
+        initial_state = {"run_id": run_id, "trigger": trigger, "retry_count": 0,
+                         "logs": [], "errors": []}
+        if user_topic:
+            initial_state["user_topic"] = user_topic
+        if user_content:
+            initial_state["user_content"] = user_content
+
         try:
             final_state = await graph.ainvoke(
-                {"run_id": run_id, "trigger": trigger, "retry_count": 0,
-                 "logs": [], "errors": []},
+                initial_state,
                 config={"configurable": {"thread_id": run_id}, "run_name": f"shorts-run-{run_id[:8]}"},
             )
         except Exception as e:

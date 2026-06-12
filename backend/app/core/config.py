@@ -7,7 +7,8 @@ BACKEND_DIR = Path(__file__).resolve().parents[2]
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
-        env_file=BACKEND_DIR / ".env",
+        # Both locations work; backend/.env wins if both exist
+        env_file=(BACKEND_DIR.parent / ".env", BACKEND_DIR / ".env"),
         env_file_encoding="utf-8",
         extra="ignore",
     )
@@ -25,7 +26,12 @@ class Settings(BaseSettings):
     azure_openai_embedding_api_version: str = "2024-10-21"
     embedding_dim: int = 1536
 
-    # ElevenLabs
+    # Cartesia (primary TTS)
+    cartesia_api_key: str = ""
+    cartesia_model_id: str = "sonic-2"
+    cartesia_voice_id: str = ""
+
+    # ElevenLabs (secondary TTS)
     elevenlabs_api_key: str = ""
     elevenlabs_voice_id: str = "21m00Tcm4TlvDq8ikWAM"
     elevenlabs_model_id: str = "eleven_turbo_v2_5"
@@ -36,6 +42,7 @@ class Settings(BaseSettings):
     langsmith_tracing: bool = True
     langsmith_api_key: str = ""
     langsmith_project: str = "shorts-factory"
+    langsmith_endpoint: str = "https://api.smith.langchain.com"  # EU: https://eu.api.smith.langchain.com
 
     # YouTube (live publish only)
     youtube_client_secret_file: str = "client_secret.json"
@@ -49,6 +56,7 @@ class Settings(BaseSettings):
     hook_score_threshold: float = 0.7
     max_script_retries: int = 2
     target_duration_seconds: int = 50
+    max_video_seconds: int = 59  # hard ceiling — audio is tempo-adjusted to fit
     niche: str = "ai and technology"
     caption_font_path: str = "assets/fonts/Anton-Regular.ttf"
     topic_dedup_distance: float = 0.25
@@ -61,6 +69,10 @@ class Settings(BaseSettings):
     scheduler_enabled: bool = True
 
     output_dir: str = "../outputs"
+
+    @property
+    def has_cartesia(self) -> bool:
+        return bool(self.cartesia_api_key and self.cartesia_voice_id)
 
     @property
     def has_tavily(self) -> bool:

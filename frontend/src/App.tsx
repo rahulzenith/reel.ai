@@ -1,8 +1,11 @@
+import { useState } from "react";
 import Topbar from "./components/layout/Topbar";
 import AgentPipeline from "./components/pipeline/AgentPipeline";
 import TopicCard from "./components/topic/TopicCard";
+import ScriptCard from "./components/script/ScriptCard";
 import ScorePanel from "./components/scores/ScorePanel";
 import LiveLog from "./components/logs/LiveLog";
+import VideoBanner from "./components/video/VideoBanner";
 import HistoryTable from "./components/history/HistoryTable";
 import { useRunState } from "./hooks/useRunState";
 import { useHistory } from "./hooks/useHistory";
@@ -11,46 +14,62 @@ import { triggerRun } from "./api/client";
 export default function App() {
   const state = useRunState();
   const history = useHistory(state.runStatus);
+  const [topic, setTopic] = useState("");
+  const [content, setContent] = useState("");
+  const [showContent, setShowContent] = useState(false);
 
   const handleRun = () => {
-    triggerRun().catch((e) => alert(e.message));
+    triggerRun(topic, content)
+      .then(() => {
+        setTopic("");
+        setContent("");
+        setShowContent(false);
+      })
+      .catch((e) => alert(e.message));
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6 font-sans">
-      <div className="max-w-5xl mx-auto">
-        <Topbar
-          connected={state.connected}
-          runStatus={state.runStatus}
-          publishMode={state.publishMode}
-          nextScheduledRun={state.nextScheduledRun}
-          onRun={handleRun}
-        />
+    <div className="min-h-screen text-slate-200 px-6 pb-10 font-sans">
+      <Topbar
+        connected={state.connected}
+        runStatus={state.runStatus}
+        publishMode={state.publishMode}
+        nextScheduledRun={state.nextScheduledRun}
+        topic={topic}
+        content={content}
+        showContent={showContent}
+        onTopicChange={setTopic}
+        onContentChange={setContent}
+        onToggleContent={() => setShowContent((v) => !v)}
+        onRun={handleRun}
+      />
 
-        <div className="grid grid-cols-3 gap-4">
-          <div className="col-span-2">
+      <div className="max-w-6xl mx-auto flex flex-col gap-4">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+          {/* Left: the live pipeline */}
+          <div className="lg:col-span-4">
             <AgentPipeline nodes={state.nodes} />
           </div>
-          <div className="flex flex-col gap-4">
+
+          {/* Right: what the agents are producing */}
+          <div className="lg:col-span-8 flex flex-col gap-4">
             <TopicCard topic={state.topic} source={state.topicSource} />
-            <ScorePanel scores={state.scores} retryCount={state.retryCount} feedback={state.evalFeedback} />
-            <LiveLog logs={state.logs} />
+            <ScriptCard script={state.script} />
           </div>
         </div>
 
-        {state.runStatus === "completed" && state.videoPath && state.runId && (
-          <div className="mt-4 bg-emerald-50 border border-emerald-200 rounded-xl p-4 text-sm text-emerald-800">
-            Video ready:{" "}
-            <a
-              href={state.youtubeUrl ?? `/outputs/${state.runId}/short.mp4`}
-              target="_blank"
-              rel="noreferrer"
-              className="font-medium underline"
-            >
-              {state.youtubeUrl ?? "preview local render"}
-            </a>
-            {state.dryRun && <span className="ml-2 text-emerald-600">(dry run — not uploaded)</span>}
-          </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <ScorePanel scores={state.scores} retryCount={state.retryCount} feedback={state.evalFeedback} />
+          <LiveLog logs={state.logs} />
+        </div>
+
+        {state.runStatus === "completed" && state.runId && (
+          <VideoBanner
+            runId={state.runId}
+            videoPath={state.videoPath}
+            youtubeUrl={state.youtubeUrl}
+            dryRun={state.dryRun}
+          />
         )}
 
         <HistoryTable runs={history} />

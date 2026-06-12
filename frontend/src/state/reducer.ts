@@ -1,4 +1,4 @@
-import type { AgentStatus, RunSnapshot, Scores, WsEvent } from "./types";
+import type { AgentStatus, RunSnapshot, Scores, ScriptData, WsEvent } from "./types";
 
 export interface RunState {
   connected: boolean;
@@ -7,6 +7,7 @@ export interface RunState {
   topic: string | null;
   topicSource: string | null;
   nodes: Record<string, AgentStatus>;
+  script: ScriptData | null;
   scores: Scores | null;
   retryCount: number;
   evalFeedback: string | null;
@@ -25,6 +26,7 @@ export const initialState: RunState = {
   topic: null,
   topicSource: null,
   nodes: {},
+  script: null,
   scores: null,
   retryCount: 0,
   evalFeedback: null,
@@ -62,7 +64,9 @@ export function reducer(state: RunState, action: Action): RunState {
         topic: s.topic,
         topicSource: s.topic_source,
         nodes: s.nodes ?? {},
+        script: s.script,
         scores: s.scores,
+        evalFeedback: s.eval_feedback,
         retryCount: s.retry_count,
         videoPath: s.video_path,
         youtubeUrl: s.youtube_url,
@@ -91,7 +95,7 @@ export function reducer(state: RunState, action: Action): RunState {
         case "topic_selected":
           return { ...state, topic: e.topic, topicSource: e.source, logs };
         case "script_preview":
-          return { ...state, logs };
+          return { ...state, script: e.script, logs };
         case "eval_scores":
           return { ...state, scores: e.scores, retryCount: e.retry_count, evalFeedback: e.feedback, logs };
         case "run_complete":

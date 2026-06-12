@@ -167,7 +167,7 @@ Optional — everything degrades gracefully when blank:
 
 | Missing | Behavior | UI signal |
 |---|---|---|
-| `TAVILY_API_KEY` | Google Trends RSS (keyless) → curated topic list | topic source badge |
+| `TAVILY_API_KEY` | Topics: Google Trends RSS → curated list. Script grounding: falls back to the candidate's RSS snippet (weaker facts on news topics) | topic source badge |
 | `PEXELS_API_KEY` | Generated 9:16 gradient clips | "generated" in log |
 | YouTube creds / dry_run | Video renders locally + `publish_metadata.json`, no upload | DRY RUN badge |
 | `LANGSMITH_API_KEY` | Tracing silently off | none |

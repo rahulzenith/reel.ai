@@ -16,7 +16,9 @@ class RunStatusRegistry:
         self.topic: str | None = None
         self.topic_source: str | None = None
         self.nodes: dict[str, str] = {}
+        self.script: dict[str, Any] | None = None
         self.scores: dict[str, float] | None = None
+        self.eval_feedback: str | None = None
         self.retry_count: int = 0
         self.video_path: str | None = None
         self.youtube_url: str | None = None
@@ -35,9 +37,12 @@ class RunStatusRegistry:
         elif etype == "topic_selected":
             self.topic = event.get("topic")
             self.topic_source = event.get("source")
+        elif etype == "script_preview":
+            self.script = event.get("script")
         elif etype == "eval_scores":
             self.scores = event.get("scores")
             self.retry_count = event.get("retry_count", 0)
+            self.eval_feedback = event.get("feedback")
         elif etype == "run_complete":
             self.run_status = "completed"
             self.video_path = event.get("video_path")
@@ -55,7 +60,9 @@ class RunStatusRegistry:
             "topic": self.topic,
             "topic_source": self.topic_source,
             "nodes": self.nodes,
+            "script": self.script,
             "scores": self.scores,
+            "eval_feedback": self.eval_feedback,
             "retry_count": self.retry_count,
             "video_path": self.video_path,
             "youtube_url": self.youtube_url,
