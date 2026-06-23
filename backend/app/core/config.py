@@ -59,7 +59,9 @@ class Settings(BaseSettings):
     max_script_retries: int = 2
     target_duration_seconds: int = 50
     max_video_seconds: int = 59  # hard ceiling — audio is tempo-adjusted to fit
-    broll_scene_seconds: int = 5  # visual changes every ~N seconds
+    broll_scene_seconds: int = 3  # visual changes every ~N seconds (also drives clip count)
+    caption_style: str = "highlight"  # highlight | pop | block(legacy)
+    ken_burns_max_zoom: float = 1.12  # peak zoom of the slow per-scene zoom
     niche: str = "ai and technology"
     caption_font_path: str = "assets/fonts/Anton-Regular.ttf"
     caption_font_hindi_path: str = "assets/fonts/Mukta-Bold.ttf"  # Devanagari-capable

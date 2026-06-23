@@ -24,17 +24,26 @@ def _measure(path: str) -> float:
 @pipeline_node("voice_generator")
 async def voice_generator(state: dict) -> dict:
     out_path = run_dir(state["run_id"]) / "voiceover.mp3"
-    # spoken text carries <break> pauses between hook/body/CTA; captions use clean full_text
-    path, source = await synthesize(
+    # spoken text carries <break> pauses between hook/body/CTA; word_timings
+    # (Cartesia only) carry the real per-word times so captions stay in sync
+    path, source, word_timings = await synthesize(
         build_spoken_text(state["script"]), out_path, state.get("language", "en")
     )
     duration = await asyncio.to_thread(_measure, str(path))
 
-    # Hard ceiling: tempo-compress if the voice spoke too slowly to fit
+    # Hard ceiling: tempo-compress if the voice spoke too slowly to fit. The
+    # speed-up shifts every word, so rescale the timestamps by the same factor.
     if duration > settings.max_video_seconds:
+        original = duration
         path, duration = await asyncio.to_thread(
             compress_to_fit, path, duration, settings.max_video_seconds
         )
+        if word_timings and original > 0:
+            scale = duration / original
+            word_timings = [
+                {"word": w["word"], "start": w["start"] * scale, "end": w["end"] * scale}
+                for w in word_timings
+            ]
         await events.emit(events.node_status(
             "voice_generator", "running",
             f"Audio exceeded {settings.max_video_seconds}s — tempo-adjusted to {duration:.1f}s",
@@ -48,5 +57,7 @@ async def voice_generator(state: dict) -> dict:
         "voiceover_path": str(path),
         "audio_duration": duration,
         "voice_source": source,
-        "logs": [f"voice_generator: {source} audio, {duration:.1f}s"],
+        "word_timings": word_timings,
+        "logs": [f"voice_generator: {source} audio, {duration:.1f}s, "
+                 f"{len(word_timings)} word timings"],
     }

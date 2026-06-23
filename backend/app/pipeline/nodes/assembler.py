@@ -30,6 +30,9 @@ async def assembler(state: dict) -> dict:
         out_path,
         font,
         settings.broll_scene_seconds,
+        settings.caption_style,
+        settings.ken_burns_max_zoom,
+        state.get("word_timings") or None,
     )
 
     await update_run(state["run_id"], video_path=str(out_path))

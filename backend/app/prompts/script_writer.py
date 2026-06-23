@@ -26,12 +26,23 @@ LESSONS FROM THIS CHANNEL'S PAST PERFORMANCE (apply when relevant):
 RULES:
 - Length: {word_min}-{word_max} words — HARD REQUIREMENT, count them.
   Shorter scripts get rejected (~{duration}s when spoken).
-- The hook MUST be the first sentence and a hard pattern interrupt
-- Short punchy sentences. No fluff. Every word earns its place.
+- The hook MUST be the first sentence and a hard pattern interrupt.
+- ANGLE: find the unexpected, specific take — the detail or framing most writers
+  would miss. No generic openers, no "in today's world", no listicle clichés
+  unless you subvert them. Surprise the viewer with WHAT you say, not just how.
+- CONCRETE over abstract: name the specific thing, the number, the vivid image.
+  One sharp sensory detail beats three vague claims.
+- RHYTHM: vary sentence length deliberately. Stack a few short punches, then a
+  longer one, then snap back short. Monotone pacing kills retention.
+- RE-HOOK: around the one-third mark, plant a second open loop — a "but here's
+  the part nobody mentions" turn or a curiosity gap — and pay it off before the
+  CTA. This fights the mid-video swipe-away.
 - FLOW: each sentence must hand off smoothly to the next — use connective
   phrases when shifting ideas. Hook → body → CTA must feel like one continuous
   thought, never an abrupt topic change.
-- End with one soft CTA.
+- CTA: end with ONE CTA that fits the script. Prefer a curiosity- or
+  comment-bait CTA ("which side are you on?", "tell me I'm wrong") over a generic
+  "like and subscribe" — it should feel like a natural last beat, never tacked on.
 - keywords: 3-4 stock-footage search phrases, each 1-2 SIMPLE words describing
   things a camera can film (e.g. "typing laptop", "city night", "robot arm").
   Footage for them MUST plausibly exist on a stock site — never abstract

@@ -26,6 +26,7 @@ class PipelineState(TypedDict, total=False):
     voiceover_path: str  # conflict; only logs/errors need reducers
     audio_duration: float
     voice_source: str
+    word_timings: list[dict]  # [{"word","start","end"}] — real per-word times (Cartesia)
 
     # broll_selector ┘
     broll_paths: list[str]
